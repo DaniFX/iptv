@@ -41,12 +41,12 @@ var httpFactory = provider.GetRequiredService<IHttpClientFactory>();
 
 // ── Servizi ───────────────────────────────────────────────────────────────────
 var checker    = new LinkChecker(httpFactory, settings.Checker);
-var raiRes     = new RaiResolver(httpFactory, settings.Rai);
-var ecuadorRes = new EcuadorResolver(httpFactory, settings.Ecuador);
+var raiRes     = new RaiResolver(settings.Rai);
+var ecuadorRes = new EcuadorResolver(settings.Ecuador);
 var publisher  = new GitHubPublisher(settings.GitHub);
 
 Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-Console.WriteLine($"IPTV Updater .NET 10 — {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"IPTV Updater .NET 10 \u2014 {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
 // ── Step 1: Scarica sorgenti ──────────────────────────────────────────────────
@@ -69,6 +69,8 @@ foreach (var source in settings.Sources.Where(s => s.Enabled))
             if (ch.Url.Contains("teleamazonas",   StringComparison.OrdinalIgnoreCase)) continue;
             if (ch.Url.Contains("ecuavisa",       StringComparison.OrdinalIgnoreCase)) continue;
             if (ch.Url.Contains("vustreams",      StringComparison.OrdinalIgnoreCase)) continue;
+            if (ch.Url.Contains("mdstrm.com",     StringComparison.OrdinalIgnoreCase) &&
+                ch.Name.Contains("Ecuavisa",       StringComparison.OrdinalIgnoreCase)) continue;
             if (!seenUrls.Add(ch.Url)) continue;
             allChannels.Add(ch);
             added++;
@@ -76,7 +78,7 @@ foreach (var source in settings.Sources.Where(s => s.Enabled))
 
         Console.WriteLine($"  +{added} canali unici (tot: {allChannels.Count})");
     }
-    catch (Exception ex) { Console.WriteLine($"  ✗ {ex.Message}"); }
+    catch (Exception ex) { Console.WriteLine($"  \u2717 {ex.Message}"); }
 }
 
 // ── Step 2: Test link ─────────────────────────────────────────────────────────

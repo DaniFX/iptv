@@ -2,7 +2,7 @@ using IptvUpdater.Models;
 
 namespace IptvUpdater.Services;
 
-public class RaiResolver(IHttpClientFactory httpFactory, RaiConfig config)
+public class RaiResolver(RaiConfig config)
 {
     private const string RelinkerBase =
         "https://mediapolis.rai.it/relinker/relinkerServlet.htm";
@@ -12,7 +12,7 @@ public class RaiResolver(IHttpClientFactory httpFactory, RaiConfig config)
         Console.WriteLine("\n[RAI] Rigenerazione token...");
         var tasks = config.Channels.Select(ResolveOneAsync);
         var results = await Task.WhenAll(tasks);
-        return [.. results.Where(c => c is not null)!];
+        return [.. results.Where(c => c is not null)];
     }
 
     private async Task<Channel?> ResolveOneAsync(RaiChannel rai)
@@ -38,7 +38,7 @@ public class RaiResolver(IHttpClientFactory httpFactory, RaiConfig config)
 
             if (streamUrl is not null && streamUrl.Contains(".m3u8"))
             {
-                Console.WriteLine($"  ✓ {rai.Name} → token ok");
+                Console.WriteLine($"  \u2713 {rai.Name} \u2192 token ok");
                 return new Channel
                 {
                     Name        = rai.Name,
@@ -52,12 +52,12 @@ public class RaiResolver(IHttpClientFactory httpFactory, RaiConfig config)
             }
 
             Console.WriteLine(
-                $"  ✗ {rai.Name} → nessun redirect .m3u8 (HTTP {(int)response.StatusCode})");
+                $"  \u2717 {rai.Name} \u2192 nessun redirect .m3u8 (HTTP {(int)response.StatusCode})");
             return null;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"  ✗ {rai.Name} → {ex.Message}");
+            Console.WriteLine($"  \u2717 {rai.Name} \u2192 {ex.Message}");
             return null;
         }
     }

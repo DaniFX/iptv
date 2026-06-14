@@ -5,16 +5,9 @@ namespace IptvUpdater.Services;
 
 /// <summary>
 /// Teleamazonas e Ecuavisa sono geo-bloccati (HTTP 403 senza VPN).
-/// Test confermato: NordVPN Ecuador #2 (server virtuale in Colombia) → HTTP 200.
-/// Il resolver:
-///   1. Connette NordVPN Ecuador
-///   2. Risolve il redirect finale di ogni canale (HEAD follow)
-///   3. Verifica che lo stream risponda 200/206
-///   4. Disconnette NordVPN
-/// L'URL nella M3U finale è quello diretto; SS IPTV deve avere VPN attiva
-/// oppure il CDN continua a servire lo stream dopo il primo handshake.
+/// Test confermato 2026-06-14: NordVPN Ecuador #2 (server virtuale CO) → HTTP 200.
 /// </summary>
-public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig config)
+public class EcuadorResolver(EcuadorConfig config)
 {
     private const string UserAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0";
@@ -26,12 +19,11 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
         if (!await NordVpnConnectAsync(config.NordVpnCountry))
         {
             Console.WriteLine(
-                "  ✗ NordVPN non disponibile — canali Ecuador saltati.\n" +
+                "  \u2717 NordVPN non disponibile \u2014 canali Ecuador saltati.\n" +
                 "    Soluzione: nordvpn login && nordvpn connect Ecuador");
             return [];
         }
 
-        // Attesa handshake VPN (ec2.nordvpn.com — virtuale in Colombia)
         await Task.Delay(4000);
 
         var country = await GetCurrentCountryAsync();
@@ -46,11 +38,11 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
                 if (resolved is not null)
                 {
                     results.Add(resolved);
-                    Console.WriteLine($"  ✓ {ch.Name} → {resolved.ResolvedUrl ?? resolved.Url}");
+                    Console.WriteLine($"  \u2713 {ch.Name} \u2192 {resolved.ResolvedUrl ?? resolved.Url}");
                 }
                 else
                 {
-                    Console.WriteLine($"  ✗ {ch.Name} → non raggiungibile con VPN");
+                    Console.WriteLine($"  \u2717 {ch.Name} \u2192 non raggiungibile con VPN");
                 }
             }
             return results;
@@ -66,7 +58,6 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
     {
         try
         {
-            // Handler senza auto-redirect: vogliamo catturare il Location header
             var handler = new HttpClientHandler
             {
                 AllowAutoRedirect = false,
@@ -83,7 +74,6 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
                 new HttpRequestMessage(HttpMethod.Head, ch.Url));
             var code = (int)resp.StatusCode;
 
-            // Segui redirect manualmente per ottenere l'URL finale
             string finalUrl = ch.Url;
             if (code is 301 or 302 or 307 or 308 && resp.Headers.Location is not null)
             {
@@ -91,7 +81,6 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
                     ? resp.Headers.Location.ToString()
                     : new Uri(new Uri(ch.Url), resp.Headers.Location).ToString();
 
-                // Verifica anche il redirect target
                 var resp2 = await client.SendAsync(
                     new HttpRequestMessage(HttpMethod.Head, finalUrl));
                 code = (int)resp2.StatusCode;
@@ -121,15 +110,13 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
         }
     }
 
-    // ── NordVPN helpers ────────────────────────────────────────────────────────
-
     private static async Task<bool> NordVpnConnectAsync(string country)
     {
         try
         {
             var r = await RunAsync("nordvpn", $"connect {country}");
             return r.ExitCode == 0
-                || r.Output.Contains("Connected",        StringComparison.OrdinalIgnoreCase)
+                || r.Output.Contains("Connected",         StringComparison.OrdinalIgnoreCase)
                 || r.Output.Contains("already connected", StringComparison.OrdinalIgnoreCase);
         }
         catch { return false; }
