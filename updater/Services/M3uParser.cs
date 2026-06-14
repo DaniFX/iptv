@@ -18,6 +18,10 @@ public static partial class M3uParser
     [GeneratedRegex(@"tvg-chno=""([^""]*)""")]
     private static partial Regex ChNoRegex();
 
+    private const string RaiUserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0";
+    private const string RaiReferer = "https://www.raiplay.it/";
+
     public static List<Channel> Parse(string content)
     {
         var channels = new List<Channel>();
@@ -76,7 +80,13 @@ public static partial class M3uParser
 
         foreach (var ch in channels)
         {
-            var url = ch.ResolvedUrl ?? ch.Url;
+            // Per i canali RAI (Status=Regenerated) usiamo SEMPRE l'Url del relinker
+            // (permanente) — mai il ResolvedUrl che ha token a 5 minuti.
+            // Per tutti gli altri usiamo ResolvedUrl se disponibile.
+            bool isRai = ch.Status == ChannelStatus.Regenerated
+                         && ch.Url.Contains("relinkerServlet", StringComparison.OrdinalIgnoreCase);
+
+            var url = isRai ? ch.Url : (ch.ResolvedUrl ?? ch.Url);
             if (string.IsNullOrEmpty(url)) continue;
 
             if (!string.IsNullOrEmpty(ch.RawExtInf))
@@ -92,6 +102,21 @@ public static partial class M3uParser
                 if (!string.IsNullOrEmpty(ch.Group))   parts.Add($"group-title=\"{ch.Group}\"");
                 sb.AppendLine(string.Join(" ", parts) + $",{ch.Name}");
             }
+
+            // Direttive VLC per far seguire i redirect del relinker RAI
+            if (isRai)
+            {
+                sb.AppendLine($"#EXTVLCOPT:http-user-agent={RaiUserAgent}");
+                sb.AppendLine($"#EXTVLCOPT:http-referrer={RaiReferer}");
+            }
+
+            // Referer per Teleamazonas
+            if (url.Contains("teleamazonas", StringComparison.OrdinalIgnoreCase) ||
+                url.Contains("vustreams",    StringComparison.OrdinalIgnoreCase))
+            {
+                sb.AppendLine("#EXTVLCOPT:http-referrer=https://teleamazonas.com");
+            }
+
             sb.AppendLine(url);
         }
 
