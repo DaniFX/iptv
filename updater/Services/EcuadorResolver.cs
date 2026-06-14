@@ -1,16 +1,20 @@
 using IptvUpdater.Models;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace IptvUpdater.Services;
 
 /// <summary>
-/// Teleamazonas e Ecuavisa sono geo-bloccati (HTTP 403 senza VPN).
-/// Test confermato 2026-06-14: NordVPN Ecuador #2 (server virtuale CO) → HTTP 200.
+/// Teleamazonas è geo-bloccata (HTTP 403 senza VPN Ecuador).
+/// Il flusso è servito via streamlink in background su http://LOCAL_IP:8888.
+/// SSIPTV e VLC sul TV si connettono all’IP locale del PC — nessun token da rigenerare.
 /// </summary>
 public class EcuadorResolver(EcuadorConfig config)
 {
-    private const string UserAgent =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0";
+    private const int    StreamlinkPort = 8888;
+    private const string StreamlinkExe  = "streamlink";
+    private const string StreamlinkQuality = "best";
 
     public async Task<List<Channel>> ResolveAsync()
     {
@@ -19,95 +23,150 @@ public class EcuadorResolver(EcuadorConfig config)
         if (!await NordVpnConnectAsync(config.NordVpnCountry))
         {
             Console.WriteLine(
-                "  \u2717 NordVPN non disponibile \u2014 canali Ecuador saltati.\n" +
-                "    Soluzione: nordvpn login && nordvpn connect Ecuador");
+                "  \u2717 NordVPN non disponibile — canali Ecuador saltati.\n" +
+                "    Soluzione: nordvpn login && nordvpn set technology nordlynx");
             return [];
         }
 
         await Task.Delay(4000);
 
         var country = await GetCurrentCountryAsync();
-        Console.WriteLine($"  IP corrente: {country.Trim()} (atteso EC o CO via server virtuale)");
+        Console.WriteLine($"  IP esterno: {country.Trim()} (atteso EC o CO via server virtuale)");
 
-        try
+        var localIp = GetLocalIp();
+        Console.WriteLine($"  IP locale PC: {localIp}");
+
+        var results = new List<Channel>();
+
+        foreach (var ch in config.Channels)
         {
-            var results = new List<Channel>();
-            foreach (var ch in config.Channels)
-            {
-                var resolved = await ResolveOneAsync(ch);
-                if (resolved is not null)
-                {
-                    results.Add(resolved);
-                    Console.WriteLine($"  \u2713 {ch.Name} \u2192 {resolved.ResolvedUrl ?? resolved.Url}");
-                }
-                else
-                {
-                    Console.WriteLine($"  \u2717 {ch.Name} \u2192 non raggiungibile con VPN");
-                }
-            }
-            return results;
-        }
-        finally
-        {
-            Console.WriteLine("  Disconnetto NordVPN...");
-            await NordVpnDisconnectAsync();
-        }
-    }
+            Console.WriteLine($"  Avvio streamlink per {ch.Name}...");
+            var port = StreamlinkPort + results.Count; // porta incrementale se più canali
+            var started = await StartStreamlinkAsync(ch.Url, port);
 
-    private async Task<Channel?> ResolveOneAsync(EcuadorChannel ch)
-    {
-        try
-        {
-            var handler = new HttpClientHandler
+            if (started)
             {
-                AllowAutoRedirect = false,
-                ServerCertificateCustomValidationCallback =
-                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
-            using var client = new HttpClient(handler)
-            {
-                Timeout = TimeSpan.FromSeconds(12)
-            };
-            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent);
-
-            var resp = await client.SendAsync(
-                new HttpRequestMessage(HttpMethod.Head, ch.Url));
-            var code = (int)resp.StatusCode;
-
-            string finalUrl = ch.Url;
-            if (code is 301 or 302 or 307 or 308 && resp.Headers.Location is not null)
-            {
-                finalUrl = resp.Headers.Location.IsAbsoluteUri
-                    ? resp.Headers.Location.ToString()
-                    : new Uri(new Uri(ch.Url), resp.Headers.Location).ToString();
-
-                var resp2 = await client.SendAsync(
-                    new HttpRequestMessage(HttpMethod.Head, finalUrl));
-                code = (int)resp2.StatusCode;
-            }
-
-            if (code is 200 or 206)
-            {
-                return new Channel
+                var proxyUrl = $"http://{localIp}:{port}";
+                Console.WriteLine($"  \u2713 {ch.Name} \u2192 {proxyUrl}");
+                results.Add(new Channel
                 {
                     Name        = ch.Name,
                     Group       = ch.Group,
                     ChNo        = ch.ChNo,
                     TvgId       = ch.TvgId,
-                    Url         = ch.Url,
-                    ResolvedUrl = finalUrl,
-                    Status      = ChannelStatus.Regenerated,
-                };
+                    Url         = proxyUrl,
+                    ResolvedUrl = proxyUrl,
+                    Status      = ChannelStatus.Alive,
+                });
             }
+            else
+            {
+                Console.WriteLine($"  \u2717 {ch.Name} \u2192 streamlink non avviato");
+            }
+        }
 
-            Console.WriteLine($"    HTTP {code} su {finalUrl}");
-            return null;
+        // NON disconnettiamo la VPN: streamlink ne ha bisogno mentre trasmette
+        if (results.Count > 0)
+            Console.WriteLine("  VPN rimane connessa (streamlink attivo in background)");
+        else
+        {
+            Console.WriteLine("  Disconnetto NordVPN (nessun canale attivo)...");
+            await NordVpnDisconnectAsync();
+        }
+
+        Console.WriteLine($"  Ecuador: {results.Count}/{config.Channels.Count} ok");
+        return results;
+    }
+
+    // Avvia streamlink come processo background, attende che il server sia pronto
+    private static async Task<bool> StartStreamlinkAsync(string url, int port)
+    {
+        try
+        {
+            // Termina eventuale streamlink precedente sulla stessa porta
+            await KillPortAsync(port);
+
+            var psi = new ProcessStartInfo(StreamlinkExe,
+                $"--player-external-http --player-external-http-port {port} \"{url}\" {StreamlinkQuality}")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError  = true,
+                UseShellExecute        = false,
+            };
+
+            var proc = Process.Start(psi)!;
+
+            // Attende fino a 15s che streamlink scriva "Starting server"
+            var cts     = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            var ready   = false;
+
+            _ = Task.Run(async () =>
+            {
+                while (!proc.StandardOutput.EndOfStream && !cts.Token.IsCancellationRequested)
+                {
+                    var line = await proc.StandardOutput.ReadLineAsync(cts.Token);
+                    if (line is not null && line.Contains("Starting server",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        ready = true;
+                        cts.Cancel();
+                    }
+                }
+            }, cts.Token);
+
+            _ = Task.Run(async () =>
+            {
+                while (!proc.StandardError.EndOfStream && !cts.Token.IsCancellationRequested)
+                {
+                    var line = await proc.StandardError.ReadLineAsync(cts.Token);
+                    if (line is not null && line.Contains("Starting server",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        ready = true;
+                        cts.Cancel();
+                    }
+                }
+            }, cts.Token);
+
+            try { await Task.Delay(15000, cts.Token); } catch (OperationCanceledException) { }
+
+            return ready;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"    Errore: {ex.Message}");
-            return null;
+            Console.WriteLine($"    Errore avvio streamlink: {ex.Message}");
+            return false;
         }
+    }
+
+    private static async Task KillPortAsync(int port)
+    {
+        try
+        {
+            // fuser -k porta/tcp (Linux)
+            await RunAsync("fuser", $"-k {port}/tcp");
+        }
+        catch { /* ignora se fuser non c'è */ }
+    }
+
+    private static string GetLocalIp()
+    {
+        foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (ni.OperationalStatus != OperationalStatus.Up) continue;
+            if (ni.NetworkInterfaceType is NetworkInterfaceType.Loopback) continue;
+
+            foreach (var addr in ni.GetIPProperties().UnicastAddresses)
+            {
+                if (addr.Address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    var ip = addr.Address.ToString();
+                    if (ip.StartsWith("192.168.") || ip.StartsWith("10.") || ip.StartsWith("172."))
+                        return ip;
+                }
+            }
+        }
+        return "127.0.0.1";
     }
 
     private static async Task<bool> NordVpnConnectAsync(string country)
