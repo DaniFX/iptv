@@ -1,0 +1,32 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="rai1.it" tvg-name="RAI 1" tvg-chno="1" group-title="Italia",RAI 1
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000006/playlist.m3u8
+#EXTINF:-1 tvg-id="rai2.it" tvg-name="RAI 2" tvg-chno="2" group-title="Italia",RAI 2
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000007/playlist.m3u8
+#EXTINF:-1 tvg-id="rai3.it" tvg-name="RAI 3" tvg-chno="3" group-title="Italia",RAI 3
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000008/playlist.m3u8
+#EXTINF:-1 tvg-id="rai4.it" tvg-name="RAI 4" group-title="Italia",RAI 4
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000009/playlist.m3u8
+#EXTINF:-1 tvg-id="rai5.it" tvg-name="RAI 5" group-title="Italia",RAI 5
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000010/playlist.m3u8
+#EXTINF:-1 tvg-id="raiunocinema.it" tvg-name="RAI Unocinema" group-title="Italia",RAI 1 CINEMA
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000011/playlist.m3u8
+#EXTINF:-1 tvg-id="raiinfo.it" tvg-name="RAI Info" group-title="Italia",RAI NEWS 24
+https://ristubau-gh-edge.icast.io/hih/100000000101070000000012/playlist.m3u8
+#EXTINF:-1 tvg-id="la7.it" tvg-name="La7" tvg-chno="7" group-title="Italia",La7
+https://d15umi5iaezxgx.cloudfront.net/LA7/CLN/HLS-B/Live_1280x720_.m3u8
+#EXTINF:-1 tvg-id="tv8.it" tvg-name="TV8" tvg-chno="8" group-title="Italia",TV8
+https://d15umi5iaezxgx.cloudfront.net/TV8/CLN/HLS-B/Live_1280x720_.m3u8
+#EXTINF:-1 tvg-id="cielo.it" tvg-name="Cielo" tvg-chno="9" group-title="Italia",Cielo
+https://d15umi5iaezxgx.cloudfront.net/CIELO/CLN/HLS-B/Live_1280x720_.m3u8
+#EXTINF:-1 tvg-id="paramount.it" tvg-name="Paramount Network" group-title="Italia",Paramount Network
+https://d15umi5iaezxgx.cloudfront.net/PARAMOUNT/CLN/HLS-B/Live_1280x720_.m3u8
+#EXTINF:-1 tvg-id="skynews.it" tvg-name="Sky News" group-title="Italia",Sky News
+https://skynews-live.mediaset.net/skynews/skynews.m3u8
+#EXTINF:-1 tvg-id="cnn.it" tvg-name="CNN International" group-title="Italia",CNN International
+https://cnn-eu-live.mediaset.net/cnn/cnn.m3u8
+
+#EXTINF:-1 tvg-id="teleamazonas.ec" tvg-name="Teleamazonas" group-title="Ecuador",Teleamazonas
+https://teleamazonas-live.cdn.vustreams.com/live/fd4ab346-b4e3-4628-abf0-b5a1bc192428/live.isml/playlist.m3u8
+#EXTINF:-1 tvg-id="ecuavisa.ec" tvg-name="Ecuavisa" group-title="Ecuador",Ecuavisa
+https://mdstrm.com/live-stream-playlist/6089d0a7f61e11081f8c832a.m3u8
