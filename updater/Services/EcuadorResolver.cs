@@ -3,8 +3,22 @@ using System.Diagnostics;
 
 namespace IptvUpdater.Services;
 
+/// <summary>
+/// Teleamazonas e Ecuavisa sono geo-bloccati (HTTP 403 senza VPN).
+/// Test confermato: NordVPN Ecuador #2 (server virtuale in Colombia) → HTTP 200.
+/// Il resolver:
+///   1. Connette NordVPN Ecuador
+///   2. Risolve il redirect finale di ogni canale (HEAD follow)
+///   3. Verifica che lo stream risponda 200/206
+///   4. Disconnette NordVPN
+/// L'URL nella M3U finale è quello diretto; SS IPTV deve avere VPN attiva
+/// oppure il CDN continua a servire lo stream dopo il primo handshake.
+/// </summary>
 public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig config)
 {
+    private const string UserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0";
+
     public async Task<List<Channel>> ResolveAsync()
     {
         Console.WriteLine("\n[Ecuador] Connetto NordVPN...");
@@ -13,21 +27,31 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
         {
             Console.WriteLine(
                 "  ✗ NordVPN non disponibile — canali Ecuador saltati.\n" +
-                "    Esegui: nordvpn login");
+                "    Soluzione: nordvpn login && nordvpn connect Ecuador");
             return [];
         }
 
+        // Attesa handshake VPN (ec2.nordvpn.com — virtuale in Colombia)
+        await Task.Delay(4000);
+
+        var country = await GetCurrentCountryAsync();
+        Console.WriteLine($"  IP corrente: {country.Trim()} (atteso EC o CO via server virtuale)");
+
         try
         {
-            await Task.Delay(3000); // attesa handshake VPN
-            var country = await GetCurrentCountryAsync();
-            Console.WriteLine($"  IP corrente: {country.Trim()}");
-
             var results = new List<Channel>();
             foreach (var ch in config.Channels)
             {
                 var resolved = await ResolveOneAsync(ch);
-                if (resolved is not null) results.Add(resolved);
+                if (resolved is not null)
+                {
+                    results.Add(resolved);
+                    Console.WriteLine($"  ✓ {ch.Name} → {resolved.ResolvedUrl ?? resolved.Url}");
+                }
+                else
+                {
+                    Console.WriteLine($"  ✗ {ch.Name} → non raggiungibile con VPN");
+                }
             }
             return results;
         }
@@ -42,23 +66,39 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
     {
         try
         {
-            var http = httpFactory.CreateClient("checker");
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var req = new HttpRequestMessage(HttpMethod.Head, ch.Url);
-            req.Headers.TryAddWithoutValidation(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0");
+            // Handler senza auto-redirect: vogliamo catturare il Location header
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+                ServerCertificateCustomValidationCallback =
+                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            using var client = new HttpClient(handler)
+            {
+                Timeout = TimeSpan.FromSeconds(12)
+            };
+            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent);
 
-            var resp = await http.SendAsync(req, cts.Token);
+            var resp = await client.SendAsync(
+                new HttpRequestMessage(HttpMethod.Head, ch.Url));
             var code = (int)resp.StatusCode;
 
-            if (code is 200 or 206 or 301 or 302)
+            // Segui redirect manualmente per ottenere l'URL finale
+            string finalUrl = ch.Url;
+            if (code is 301 or 302 or 307 or 308 && resp.Headers.Location is not null)
             {
-                var finalUrl = code is 301 or 302 && resp.Headers.Location is not null
+                finalUrl = resp.Headers.Location.IsAbsoluteUri
                     ? resp.Headers.Location.ToString()
-                    : ch.Url;
+                    : new Uri(new Uri(ch.Url), resp.Headers.Location).ToString();
 
-                Console.WriteLine($"  ✓ {ch.Name} [HTTP {code}]");
+                // Verifica anche il redirect target
+                var resp2 = await client.SendAsync(
+                    new HttpRequestMessage(HttpMethod.Head, finalUrl));
+                code = (int)resp2.StatusCode;
+            }
+
+            if (code is 200 or 206)
+            {
                 return new Channel
                 {
                     Name        = ch.Name,
@@ -71,15 +111,17 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
                 };
             }
 
-            Console.WriteLine($"  ✗ {ch.Name} [HTTP {code}]");
+            Console.WriteLine($"    HTTP {code} su {finalUrl}");
             return null;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"  ✗ {ch.Name} → {ex.Message}");
+            Console.WriteLine($"    Errore: {ex.Message}");
             return null;
         }
     }
+
+    // ── NordVPN helpers ────────────────────────────────────────────────────────
 
     private static async Task<bool> NordVpnConnectAsync(string country)
     {
@@ -87,7 +129,7 @@ public class EcuadorResolver(IHttpClientFactory httpFactory, EcuadorConfig confi
         {
             var r = await RunAsync("nordvpn", $"connect {country}");
             return r.ExitCode == 0
-                || r.Output.Contains("Connected",       StringComparison.OrdinalIgnoreCase)
+                || r.Output.Contains("Connected",        StringComparison.OrdinalIgnoreCase)
                 || r.Output.Contains("already connected", StringComparison.OrdinalIgnoreCase);
         }
         catch { return false; }
