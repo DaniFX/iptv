@@ -102,30 +102,30 @@ https://streamcdnr6-dddfac816632463dac50b21109dc1bb3.msvdn.net/live/S58803518/OO
 #EXTINF:-1 tvg-id="Pluto TV"tvg-logo="https://raw.githubusercontent.com/maginetweb-arch/TVITALIA/refs/heads/main/TVL/plutotv.png"tvg-chno="807"group-title="Altro":http-user-agent="",Pluto Film TV
 https://jmp2.uk/plu-608aa17fb9f4490007e6419a.m3u8
 #EXTINF:-1 tvg-id="rai1.it" tvg-chno="1" group-title="Italia",Rai 1
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raiuno1/hls/playlist_ma_1800-5000.m3u8?baseuri=%2Fraiuno1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=bffdd569cd0e66996a0777740fbc91cbe7840e54e661b49dbc7ff3e3197d85df
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raiuno1/hls/playlist_ma_1800-5000.m3u8?baseuri=%2Fraiuno1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=8803c675e033978d825ee59b14da5fe1fe876baf32ff27ae52d21fd4c9ffb944
 #EXTINF:-1 tvg-id="rai2.it" tvg-chno="2" group-title="Italia",Rai 2
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raidue1/hls/playlist_ma_1800-5000.m3u8?baseuri=%2Fraidue1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=1141010c07e7b44d810c0b1a7a563204f72cb385e09b77bc74374713798d3690
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raidue1/hls/playlist_ma_1800-5000.m3u8?baseuri=%2Fraidue1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=b2c2f8ac54583659b427a6bf2055a0fde62e21876e3352253aac06e635804ae9
 #EXTINF:-1 tvg-id="rai3.it" tvg-chno="3" group-title="Italia",Rai 3
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raitre1/hls/playlist_ma_1800-5000.m3u8?baseuri=%2Fraitre1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=a1433c04fa499d364caec6e6d5cbe92355f7875653068778e577ce3d63b6b861
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raitre1/hls/playlist_ma_1800-5000.m3u8?baseuri=%2Fraitre1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=c2abaece59851de3b5034823ff0d49a7581f9480b8bf2755e6b8263c338f9ea9
 #EXTINF:-1 tvg-id="rai4.it" tvg-chno="21" group-title="Italia",Rai 4
-https://raiquattro1-push.cdn.netrw.it/rai/hls/live/rai4/rai4/playlist_ma.m3u8?hdnea=st=1781453197~exp=1781453497~acl=/*~hmac=6b2aa62a786860617e0d612d84479238fbf01030ea190f3fd432c909679caaf7
+https://raiquattro1-push.cdn.netrw.it/rai/hls/live/rai4/rai4/playlist_ma.m3u8?hdnea=st=1781453543~exp=1781453843~acl=/*~hmac=051cf8c4b1757a0b67fa6f3fff6e04e355dd42c5e09b4a1eafb2e074dd755998
 #EXTINF:-1 tvg-id="rai5.it" tvg-chno="23" group-title="Italia",Rai 5
-https://raicinque1-push.cdn.netrw.it/rai/hls/live/rai5/rai5/playlist_ma.m3u8?hdnea=st=1781453197~exp=1781453497~acl=/*~hmac=6b2aa62a786860617e0d612d84479238fbf01030ea190f3fd432c909679caaf7
+https://raicinque1-push.cdn.netrw.it/rai/hls/live/rai5/rai5/playlist_ma.m3u8?hdnea=st=1781453543~exp=1781453843~acl=/*~hmac=051cf8c4b1757a0b67fa6f3fff6e04e355dd42c5e09b4a1eafb2e074dd755998
 #EXTINF:-1 tvg-id="raiunocinema.it" tvg-chno="24" group-title="Italia",Rai Movie
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raimovie1/hls/playlist_ma.m3u8?baseuri=%2Fraimovie1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=5f927cef4a649fa7d513e49cf8238d17f879d51cd3d001272a55775f202396fc
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raimovie1/hls/playlist_ma.m3u8?baseuri=%2Fraimovie1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=c3021c7b5fda600147698b9f043abdce80ec340423c3212b1bbf157f27ca6638
 #EXTINF:-1 tvg-id="raipremium.it" tvg-chno="25" group-title="Italia",Rai Premium
-https://raipremium1-push.cdn.netrw.it/rai/hls/live/raipremium/raipremium/playlist_ma.m3u8?hdnea=st=1781453197~exp=1781453497~acl=/*~hmac=6b2aa62a786860617e0d612d84479238fbf01030ea190f3fd432c909679caaf7
+https://raipremium1-push.cdn.netrw.it/rai/hls/live/raipremium/raipremium/playlist_ma.m3u8?hdnea=st=1781453543~exp=1781453843~acl=/*~hmac=051cf8c4b1757a0b67fa6f3fff6e04e355dd42c5e09b4a1eafb2e074dd755998
 #EXTINF:-1 tvg-id="raiinfo.it" tvg-chno="48" group-title="Italia",Rai News 24
-https://rainews1-live.akamaized.net/hls/live/598326/rainews1/rainews1/playlist.m3u8?hdnea=st=1781453197~exp=1781453347~acl=/*~hmac=32161830d17ffba8f4fcb0030382a01365656b03a05e1d11fc32c17f5ae1a968
+https://rainews1-live.akamaized.net/hls/live/598326/rainews1/rainews1/playlist.m3u8?hdnea=st=1781453543~exp=1781453693~acl=/*~hmac=aa00cd2743b41b86e7f824f5e48b49bf0eb738002aeeef475ee3bacceb1b65be
 #EXTINF:-1 tvg-id="raigulp.it" tvg-chno="42" group-title="Italia",Rai Gulp
-https://raigulp1-live.akamaized.net/hls/live/598332/raigulp1/raigulp1/playlist_ma.m3u8?hdnea=st=1781453197~exp=1781453347~acl=/*~hmac=32161830d17ffba8f4fcb0030382a01365656b03a05e1d11fc32c17f5ae1a968
+https://raigulp1-live.akamaized.net/hls/live/598332/raigulp1/raigulp1/playlist_ma.m3u8?hdnea=st=1781453543~exp=1781453693~acl=/*~hmac=aa00cd2743b41b86e7f824f5e48b49bf0eb738002aeeef475ee3bacceb1b65be
 #EXTINF:-1 tvg-id="raiyoyo.it" tvg-chno="43" group-title="Italia",Rai Yoyo
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raiyoyo1/hls/playlist_mo.m3u8?baseuri=%2Fraiyoyo1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=6c8afea00087c4c0c9fa3f83cf27f2079d3450e55c9b4bc30bbd32bd84c66387
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raiyoyo1/hls/playlist_mo.m3u8?baseuri=%2Fraiyoyo1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=581bcc7fed124eef6cfca5f39b471b2654f11c84151becfa5262bf1ec69b69da
 #EXTINF:-1 tvg-id="raistoria.it" tvg-chno="54" group-title="Italia",Rai Storia
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raistoria1/hls/playlist_mo.m3u8?baseuri=%2Fraistoria1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=ce10aecf0e4f21b58c99cf286cc7ac96e8b08bd4e08b6d7a9ed406da48f09c91
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raistoria1/hls/playlist_mo.m3u8?baseuri=%2Fraistoria1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=615fa0a9994a8767d8e2f0e38eebaac3c66d756c97a7c01707cfb9e9157fa5cd
 #EXTINF:-1 tvg-id="raiscuola.it" tvg-chno="57" group-title="Italia",Rai Scuola
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raiscuola1/hls/playlist_mo.m3u8?baseuri=%2Fraiscuola1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=5a1b8fe25077edb02fbc1fe758611fe72686d944cf3eb681c58daf3d4d0c6617
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raiscuola1/hls/playlist_mo.m3u8?baseuri=%2Fraiscuola1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=4d04b1f0d6bc81a01122e0ef8bf48781178df87e4b6e0392f5913dc216af8baf
 #EXTINF:-1 tvg-id="raisport.it" tvg-chno="58" group-title="Italia",Rai Sport
-https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raisportuno1/hls/playlist_mo_1800-5000.m3u8?baseuri=%2Fraisportuno1%2Fhls%2F&tstart=0&tend=1781453377&tof=86400&tk2=856061633be70ac0126117cc38452cb0cd667eb142084e757fcb6e5ed8e52eb2
+https://8e7439fdb1694c8da3a0fd63e4dda518.msvdn.net/raisportuno1/hls/playlist_mo_1800-5000.m3u8?baseuri=%2Fraisportuno1%2Fhls%2F&tstart=0&tend=1781453723&tof=86400&tk2=a4597c4b6d96ca1d972fc4dfea105825669408014ece921972179da71b5f4cef
 #EXTINF:-1 tvg-id="teleamazonas.ec" tvg-chno="200" group-title="Ecuador",Teleamazonas
 https://teleamazonas-live.cdn.vustreams.com/live/fd4ab346-b4e3-4628-abf0-b5a1bc192428/live.isml/playlist.m3u8
